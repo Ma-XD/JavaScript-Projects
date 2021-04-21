@@ -164,6 +164,26 @@ class ExprParser {
     }
 
     prefixParse() {
+        let source = this.source;
+        let result = parse();
+        if (source.hasNext()) {
+            throw new ParserError("Illegal token after end of expression on pos " + source.getPos() +
+                "\n\t\t\t\texpected: " + "nothing" +
+                "\n\t\t\t\tfind: \"" + source.next() + "\"");
+        }
+        return result;
+
+        function parse() {
+            let token = nextToken("expression");
+            if (token !== "(") {
+                return getConstOrVar(token);
+            }
+            let op = nextToken("operation");
+            let exprs = [];
+            getArgs(op, exprs)
+            return operations.get(op)(...exprs);
+        }
+
         function nextToken(expected, arity) {
             function chek() {
                 if (result.length === 0 && !source.hasNext() ||
@@ -205,7 +225,7 @@ class ExprParser {
                 source.shift(-1)
                 expr = parse();
             } else {
-                expr = getConstOrVar(token);
+                expr = getConstOrVar(token);    
             }
             return expr;
         }
@@ -234,26 +254,6 @@ class ExprParser {
             }
             nextToken(")");
         }
-
-        function parse() {
-            let token = nextToken("expression");
-            if (token !== "(") {
-                return getConstOrVar(token);
-            }
-            let op = nextToken("operation");
-            let exprs = [];
-            getArgs(op, exprs)
-            return operations.get(op)(...exprs);
-        }
-
-        let source = this.source;
-        let result = parse();
-        if (source.hasNext()) {
-            throw new ParserError("Illegal token after end of expression on pos " + source.getPos() +
-                "\n\t\t\t\texpected: " + "nothing" +
-                "\n\t\t\t\tfind: \"" + source.next() + "\"");
-        }
-        return result;
     }
 }
 
